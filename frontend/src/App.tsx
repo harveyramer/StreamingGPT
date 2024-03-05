@@ -25,7 +25,7 @@ function App() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const eventSource = new EventSource(
-      `http://localhost:3000/gpt/post`
+      `http://localhost:3000/gpt?prompt=${prompt}`
     );
 
     eventSource.onmessage = function (event) {
