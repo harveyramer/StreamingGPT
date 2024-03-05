@@ -1,30 +1,48 @@
-import React, { FormEvent, useState } from 'react';
-import axios from 'axios';
-import Markdown from 'react-markdown'
-import rehypeHighlight from 'rehype-highlight'
+import React, { FormEvent, useCallback, useRef, useState } from "react";
+import axios, { AxiosResponse } from "axios";
+import Markdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+
 type ChatMessage = {
-  index: number
+  index: number;
   message: {
-    role: string
-    content: string
-  }
+    role: string;
+    content: string;
+  };
 };
 type ChatResponse = {
-  id: string
-  object: string
-  created: number
-  model: string
-  choices: ChatMessage[]
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  choices: ChatMessage[];
 };
 
 function App() {
-  const [prompt, setPrompt] = useState('');
-  const [response, setResponse] = useState<ChatResponse>();
-
-  const handleSubmit = async (e:FormEvent<HTMLFormElement>) => {
+  const msg = useRef("");
+  const [prompt, setPrompt] = useState("");
+  const [data, setData] = useState<string>("");
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const result = await axios.post('http://localhost:3000/gpt', { prompt });
-    setResponse(result.data);
+    const eventSource = new EventSource(
+      `http://localhost:3000/gpt/post`
+    );
+
+    eventSource.onmessage = function (event) {
+      const d = JSON.parse(event.data);
+      if (d.message === msg.current) {
+        return;
+      }
+      const m = `${msg.current}${d.message}`;
+      console.log(m);
+      msg.current = m;
+      setData(m);
+    };
+
+    eventSource.onerror = function (error) {
+      console.error("EventSource failed:", error);
+      eventSource.close();
+    };
   };
 
   return (
@@ -37,7 +55,7 @@ function App() {
         />
         <button type="submit">Submit</button>
       </form>
-      {response && <Markdown rehypePlugins={[rehypeHighlight]}>{response.choices[0].message.content}</Markdown>}
+      {data && <Markdown rehypePlugins={[rehypeHighlight]}>{data}</Markdown>}
     </div>
   );
 }
