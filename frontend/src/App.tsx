@@ -1,22 +1,7 @@
-import React, { FormEvent, useCallback, useRef, useState } from "react";
-import axios, { AxiosResponse } from "axios";
+import  { FormEvent, useRef, useState } from "react";
 import Markdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 
-type ChatMessage = {
-  index: number;
-  message: {
-    role: string;
-    content: string;
-  };
-};
-type ChatResponse = {
-  id: string;
-  object: string;
-  created: number;
-  model: string;
-  choices: ChatMessage[];
-};
 
 function App() {
   const msg = useRef("");
@@ -49,6 +34,7 @@ function App() {
     <div className="App">
       <form onSubmit={handleSubmit}>
         <input
+          
           type="text"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
